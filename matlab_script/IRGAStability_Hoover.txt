@@ -1,0 +1,228 @@
+%LiCor 6400 File Processing Program Hoover
+%This program takes raw data from IRGA, selects 1-minute of "stable" photo
+%Stable based on minimizing slope and STEV of photo
+%Calculates means of all selected vars in stable window
+
+%Use for Hilaria/Ephedra data;
+
+clear all;
+cd('V:\PROJECTS\DAVE_HOOVER\RO\Ecophys\May2014\IRGA')%Select pathway
+[filename,path]     =   uigetfile({'*.*'},'multiselect','on');
+%open gui to select file of interest, you can select multiple files and it
+%will cycle through all files
+
+
+%convert filenames to character vector
+filename            =   char(filename);
+
+%loop to analyze multiple files
+for z = 1:length(filename(:,1))
+ %input file
+    file_input          =   fullfile(path,filename(z,:))
+    [path,file,ext]     =   fileparts(file_input);
+    ext_empty           =   isempty(ext);
+    sample_ID(z,:)           =   file(17:end);
+ 
+
+ %if data is rtf file, import this way.  
+        clear data data_import header
+        fid             =   fopen(file_input);
+            data_import            =   textscan(fid,'%s');
+        fclose(fid)
+            month       =   char(data_import{1,1}(4)); %These 3 rows;
+            day         =   char(data_import{1,1}(5)); %need to be changed;
+            year        =   char(data_import{1,1}(6)); %for RCMP files (from 4, 5, 6) to (9,10,11);
+        %find the end of teh header
+        index       =   strmatch('$STARTOFDATA$',data_import{1,1});
+        startheader         =   index + 1;
+
+
+        endindex    =   strmatch('Fs=',data_import{1,1});
+        if (isempty(endindex) == 1)
+            enddata =   length(data_import{1,1})
+        else
+            enddata =   endindex - 2;
+        end
+
+
+        numeric = 1;
+        i = 0;
+        while numeric == 1
+            i = i + 1;
+            numeric         =   isempty(str2num(char(data_import{1,1}(startheader+i))));
+        end
+
+
+        n_col           =   i-9; %Mod 3/31/14 DH;
+        
+            j = 1;
+        for i = startheader:startheader+n_col
+            header_cell{1,1}(j)       =   (data_import{1,1}(i));
+            j = j + 1;
+        end
+        header          =   char(header_cell{1,1});
+
+        col_A               =   strmatch('"Photo"',header);
+        col_g               =   strmatch('"Cond"',header);
+        col_E               =   strmatch('"Trmmol"',header);
+        col_Tleaf           =   strmatch('"Tleaf"',header);
+        col_RH              =   strmatch('"RH_S"',header);
+        col_time            =   strmatch('"HHMMSS"',header);
+        col_CTleaf          =   strmatch('"CTleaf"',header);
+        col_press           =   strmatch('"Press"',header);
+        col_h2os            =   strmatch('"H2OS"',header);
+        col_h2or            =   strmatch('"H2OR"',header);
+        col_flow            =   strmatch('"Flow"',header);
+        col_vpd             =   strmatch('"VpdL"',header);
+
+%Handle USGS format 3-13-14;
+x1=(data_import {1, 1} (10));
+index       =   find(ismember(data_import{1,1},'1'));
+startdata = index(1);
+enddata2       =   find(ismember(data_import{1,1},'111115'));
+enddata2 = enddata2(length(enddata2));
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    clear data_temp
+    k = 1;
+
+    for j = startdata:n_col:enddata2
+        for i = 0:n_col-1
+            data_temp       =   str2double(cell2mat(data_import{1,1}(j+i)));
+            if isnan(data_temp)
+                data(k,i+1)   =   NaN;
+            else
+                data(k,i+1)   =   data_temp;
+            end
+            if (i+1 == col_time)
+                time_char   =   char(data_import{1,1}(j+1))
+                time_str    =   sprintf('%s-%s-%s %s:%s:%s',day,month,year,time_char(2:3),time_char(5:6),time_char(8:9));
+                data(k,i+1)        =   datenum(time_str,'dd-mmm-yyyy HH:MM:SS');
+            end
+        end
+        k = k + 1;
+    end
+      i = i+1;
+
+%%%Evaluate stable window from photo data (1-minute window indow) DH%%%
+photo=data(:,5);
+aa=length(photo(:,1));
+if aa > 11 ;
+%photo(1:6,:)=[]; %Deletes the first 30 seconds of data-usually noisy, 
+                 %Need to keep consistant with line 160 (6=6x5sec=30Sec)
+a=1:(length(photo(:,1))-11);
+b=12:length(photo(:,1));
+a=a';
+b=b';
+c=[a,b];
+d=length(c(:,1))
+time=0:5:55;
+time=time';
+
+%Finds slopes from 1 minute windows
+slopes  =   zeros(length(c),2);
+for t=1:length(c(:,1))
+zz=c(t,1);
+x=c(t,2);
+n=photo(zz:x,:);
+slopes(t,:)=polyfit(time,n,1);
+end
+slopes=slopes(:,1);
+slopes2=sqrt(slopes.^2);
+timeslope=[c,slopes2];
+
+
+%Finds Coefficent of variation from 1 minute windows
+CV  =   zeros(length(c));
+for t=1:length(c(:,1))
+zz=c(t,1);
+x=c(t,2);
+n=photo(zz:x,:);
+CV(t,:)=(std(n(:,1)))%/(mean(n(:,1)));
+end
+timesCV=[c,CV];
+
+%Determines most stable 1-minute window
+rank=[timesCV(:,3),timeslope(:,3)];
+rank=rank(:,1).*rank(:,2);
+rank=[c,rank];
+rank=sortrows(rank,3);
+rank2=rank(1,1:2);
+%rank2=rank2(:,:)+6; %adds time back onto timestep-need to keep consistant with line 117
+%end
+datawindow=data(rank2(1,1):rank2(1,2),:); %Select window from data
+else datawindow=data(:,:);
+end;
+
+%Select Variables
+
+Ftime=mean(datawindow(:,3));
+Ebal=mean(datawindow(:,4));
+Photo=mean(datawindow(:,5));
+Cond=mean(datawindow(:,6));
+Ci=mean(datawindow(:,7));
+Trmmol=mean(datawindow(:,30));
+VpdL=mean(datawindow(:,31));
+CTLeaf=mean(datawindow(:,32));
+Area=mean(datawindow(:,33));
+StmRat=mean(datawindow(:,35));
+BLCONd=mean(datawindow(:,36));
+Tair=mean(datawindow(:,37));
+Tleaf=mean(datawindow(:,38));
+TBlk=mean(datawindow(:,39));
+CO2R=mean(datawindow(:,40));
+CO2S=mean(datawindow(:,41));
+H20R=mean(datawindow(:,42));
+H20S=mean(datawindow(:,43));
+RH_R=mean(datawindow(:,44));
+RH_S=mean(datawindow(:,45));
+Flow=mean(datawindow(:,46));
+PARi=mean(datawindow(:,47)); 
+PARo=mean(datawindow(:,48));
+Press=mean(datawindow(:,49));
+CsMch=mean(datawindow(:,50));
+HsMch=mean(datawindow(:,51));
+StableF=mean(datawindow(:,52));
+BLCslope=mean(datawindow(:,53));
+BLCoffst=mean(datawindow(:,54));
+f_parin=mean(datawindow(:,55));
+f_parout=mean(datawindow(:,56));
+alphaK=mean(datawindow(:,57));
+Status=mean(datawindow(:,58));
+
+phys (z, :) = {file, day, month, year, time_char, Ftime, Ebal, Photo, Cond, Ci, Trmmol, VpdL, CTLeaf, Area,  StmRat, BLCONd, Tair, Tleaf, TBlk, CO2R, CO2S, H20R, H20S, RH_R, RH_S, Flow, PARi, PARo, Press, CsMch, HsMch, StableF, BLCslope, BLCoffst, f_parin, f_parout, alphaK, Status};
+headers = {'file', 'day', 'month', 'year', 'time_char', 'Ftime', 'Ebal', 'Photo', 'Cond', 'Ci', 'Trmmol', 'VpdL', 'CTLeaf', 'Area',  'StmRat', 'BLCONd', 'Tair', 'Tleaf', 'TBlk', 'CO2R', 'CO2S', 'H20R', 'H2OS', 'RH_R', 'RH_S', 'Flow', 'PARi', 'PARo', 'Press', 'CsMch', 'HsMch', 'StableF', 'BLCslope', 'BLCoffst', 'f_parin', 'f_parout', 'alphaK', 'Status'};
+
+end
+
+
+
+% Graph "stable" section for photo
+if aa>11;
+rank2=rank2(1,1):rank2(1,2);
+rank2=rank2';
+rank3=[1 1 1 1 1 1 1 1 1 1 1 1];
+rank3=rank3';
+rank3=rank3*Photo;
+u=data(:,1);
+photo1=data(:,5);
+fig1=figure;
+%plot(u,photo1,'g',rank2,rank3,'r');
+
+%else; %If taking avg of whole dataset for data shorter than 1 min- will be a red graph;
+%    photo1=data(:,4);
+%fig1=figure;
+plot(photo1,'r');
+%end;
+% save             =   listdlg('ListString',{'Yes';'No'},'selectionmode','single'); 
+%close(fig1)
+%Continue loop for multiple files    
+    i = i+1;        
+
+    end
+
+%Output to excel
+output=[headers;phys];
+xlswrite('test.xls',output);
+
+
+
