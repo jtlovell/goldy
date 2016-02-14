@@ -2,12 +2,48 @@
 % Please edit documentation in R/autoGoldy.R
 \name{autoGoldy}
 \alias{autoGoldy}
-\title{export}
+\title{Automated processing of LICOR / IRGA Data}
 \usage{
 autoGoldy(filename, trait1 = "Photo", trait2 = "Cond", window = 6,
   verbose = TRUE, weights = c(1, 1, 1, 1))
 }
+\arguments{
+\item{filename}{The path and name of a file to parse and optimize}
+
+\item{trait1}{Character string that matches the name of a column in the input dataset. This
+data will be used for optimization computation}
+
+\item{trait2}{A (optional) second trait to assist with optimization}
+
+\item{window}{The size of the window in the sliding window optimization protocol}
+
+\item{verbose}{Logical, should updates be printed}
+
+\item{weights}{A numeric vector of length 4. These values indicate the weighting of the
+slope [1] and coeficient of variation (cv) [2] of trait1 and trait2 [3,4]}
+
+\item{...}{additional arguments, not currently in use.}
+}
+\value{
+a single row dataframe that gives the most stable data from the time series
+data input originally. A single page figure with some information is also printed.
+}
 \description{
-export
+\code{autoGoldy} Define the most stable set of observations in time-series infrared
+gas exchange data. Currently optimized for LICOR 6400 .rtf data output.
+}
+\details{
+This function runs the following pipeline:
+\itemize{
+ \item{1. }{Import and parse rtf LICOR datasets}
+ \item{2. }{Standardize (0-1) and plot the raw data}
+ \item{3. }{Run sliding window analysis to calculate the slope and CV of standardized data}
+ \item{4. }{Find the most stable window}
+ \item{5. }{Plot diagnostics}
+ \item{6. }{Output the optimal data}
+}
+}
+\examples{
+out<-autoGoldy(filename="./data/RO_052714_rr11_h57s", window=4, weights=c(1,1,.5,.5))
 }
 
