@@ -133,7 +133,7 @@ plotDiagnotics<-function(x, slope1, slope2=NULL, cv1, cv2=NULL,weightedRankOutpu
 }
 
 getBV<-function(dat, ranks, window,filename){
-  temp<-dat[stdplot$x>=ranks$wind[1] & stdplot$x<=ranks$wind[2],]
+  temp<-dat[dat$x>=ranks$wind[1] & dat$x<=ranks$wind[2],]
   out<-apply(temp,2,function(x) {
     if(is.numeric(x)){
       mean(as.numeric(x))

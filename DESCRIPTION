@@ -1,12 +1,12 @@
 Package: goldy
 Type: Package
-Title: What the Package Does (Title Case)
-Version: 0.1
+Title: Process Time-Series Gas Exchange Data
+Version: 1.0
 Date: 2016-02-12
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
-License: What license is it under?
+Author: David L. Hoover, John T. Lovell
+Maintainer: John T. Lovell <johntlovell@gmail.com>
+Description: Processes time-series data from infrared gas analyzers, such as the LICOR 6400
+License: GPL-2
 LazyData: TRUE
 Depends:
     zoo

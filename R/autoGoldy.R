@@ -27,7 +27,7 @@
 #' @return a single row dataframe that gives the most stable data from the time series
 #' data input originally. A single page figure with some information is also printed.
 #' @examples
-#' out<-autoGoldy(filename="./data/RO_052714_rr11_h57s", window=4, weights=c(1,1,.5,.5))
+#' ## Not Run out<-autoGoldy(filename="./data/RO_052714_rr11_h57s", window=4, weights=c(1,1,.5,.5))
 #' @import  zoo
 #' @export
 autoGoldy<-function(filename, trait1="Photo", trait2="Cond", window=6, verbose=TRUE,weights=c(1,1,1,1)){
