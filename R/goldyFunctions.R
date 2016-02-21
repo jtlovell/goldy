@@ -13,14 +13,14 @@ hhmmss2Time<-function(x){
   m<-as.numeric(sapply(x, function(y) strsplit(y, ":")[[1]][2]))
   s<-as.numeric(sapply(x, function(y) strsplit(y, ":")[[1]][3]))
   d<-data.frame(h,m,s)
-  d$time<-with(d, ((h*360)+(m*60)+s))
+  d$time<-with(d, ((h*3600)+(m*60)+s))
   d$time<-round(d$time-(min(d$time)),2)
   return(d$time)
 }
 std.01<-function(x) {
   (x-min(x))/max(x-min(x))
 }
-twoPlot<-function(timename="HHMMSS",dat,trait1,trait2){
+twoPlot<-function(timename="HHMMSS",dat,trait1,trait2, title){
   y1<-dat[,trait1]
   y2<-dat[,trait2]
   x<-dat[,timename]
@@ -29,7 +29,7 @@ twoPlot<-function(timename="HHMMSS",dat,trait1,trait2){
   std.y2<-std.01(y2)
   par(mar=c(5,5,5,5))
   plot(x, std.y1, type="n",bty="n", yaxt="n", ylab="", xaxt="n", xlab="time (minutes since recording began)",
-       xlim=c(0, ceiling(max(x)/60)*60))
+       xlim=c(0, ceiling(max(x)/60)*60), main=title)
   axis(side=1, at=seq(from=0, to=ceiling(max(x)/60)*60,by=60), labels=seq(from=0, to=ceiling(max(x)/60),by=1))
   axis(side=2, at=c(0,.2,.4,.6,.8,1),
        labels=round(as.numeric(sapply(c(0,.2,.4,.6,.8,1), function(x) quantile(y1,x))),1),
@@ -133,14 +133,12 @@ plotDiagnotics<-function(x, slope1, slope2=NULL, cv1, cv2=NULL,weightedRankOutpu
 }
 
 getBV<-function(dat, ranks, window,filename){
-  temp<-dat[dat$x>=ranks$wind[1] & dat$x<=ranks$wind[2],]
-  out<-apply(temp,2,function(x) {
-    if(is.numeric(x)){
-      mean(as.numeric(x))
-    }else{
-      x[floor(window/2)]
-    }
-  })
-  out<-data.frame(t(as.matrix(out)), filename=filename)
+  temp<-dat[dat$time.seconds>=ranks$wind[1] & dat$time.seconds<=ranks$wind[2],]
+  out1<-temp[ceiling(nrow(temp)/2),1:2]
+  temp2<-temp[,-c(1:2)]
+  out2<-c(out1,colMeans(temp2))
+  out<-data.frame(t(unlist(out2)))
+  out$filename=filename
+  out$window.size.observations=window
   return(out)
 }
