@@ -1,7 +1,8 @@
 #' Import zoo
 #' Export
 parseLICOR<-function(x, use.rtf=TRUE){
-  datStart<-as.numeric(system(paste("sed -n '/STARTOFDATA/='",x), intern=T))
+  datStart<-readLines(x)
+  datStart<-grep("STARTOFDATA",datStart)
   dat<-read.delim(x, sep="\t",  header=T, skip=datStart, stringsAsFactors=F)
   dat<-dat[dat$HHMMSS!="",]
   info<-dat$Obs[5]
