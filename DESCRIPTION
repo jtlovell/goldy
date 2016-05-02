@@ -8,6 +8,7 @@ Maintainer: John T. Lovell <johntlovell@gmail.com>
 Description: Processes time-series data from infrared gas analyzers, such as the LICOR 6400
 License: GPL-2
 LazyData: TRUE
+VignetteBuilder: knitr
 Depends:
     zoo
 RoxygenNote: 5.0.1
