@@ -3,11 +3,8 @@ title: "autoGoldy-beta Tutorial"
 author: "DH Hoover, JT Lovell"
 date: "May 2, 2016"
 output: rmarkdown::html_vignette
-vignette: >
+html: >
   %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteIndexEntry{Vignette Title}
-  \usepackage[utf8]{inputenc}
-
 ---
 
 ```{r setup, include=FALSE}
@@ -26,7 +23,7 @@ autoGoldy was developed to objectively select the most stable set of observation
 
 Below we describe the methods for the two main parts of this objective selection: 1. How to collect the IRGA data time-series for the autoGoldy program on the LICOR 6400 and 2. How to install and run the autoGoldy package in R.
 
-![](/Users/John/Desktop/dropbox/goldy/vignette/Fig1.png)
+![](/Users/John/Desktop/dropbox/goldy/vignettes/Fig1.png)
 *__Figure 1. Plot diagnostics example.__ The autoGoldy program selects a stable window (green box) and then calculates averages for all variables during that window, which is output to a .csv file. Stability is determined by calculating slope and the coefficient of variation for a sliding window across the data and selecting the window with the minimum summed, wighted quantile. Users select one or more traits (e.g. photo, cond), window length and have the option to weight the traits and stability measures.*
 
 
