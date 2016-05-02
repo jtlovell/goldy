@@ -108,13 +108,3 @@ Change window and weights as desired
 ```{r}
 out<-autoGoldy(dirname=input.directory, output.dir=output.directory, trait1 = "Photo", trait2 = "Cond", window=6, weights=c(1,1,1,1))
 ```
-
-
-
-
-
-
-
-
-
-
