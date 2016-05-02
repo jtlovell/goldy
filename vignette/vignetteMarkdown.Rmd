@@ -1,0 +1,124 @@
+---
+title: "autoGoldy-beta Tutorial"
+author: "DH Hoover, JT Lovell"
+date: "May 2, 2016"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteIndexEntry{Vignette Title}
+  \usepackage[utf8]{inputenc}
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(fig.width=8, fig.height=8,echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+# Overview
+### Introduction
+Stability is a critical but often unstandardized aspect of gas exchange measurements. One common approach is for operators to manually log measurements once a user-defined stable period in photosynthesis and/or conductance is reached. However this popular approach relies heavily on the individual operator and therefore may introduce variability across measurements and multiple operators within a study. 
+
+autoGoldy was developed to objectively select the most stable set of observations in a time-series of infrared gas exchange (IRGA) data on the LICOR 6400. Rather than manually logging, this approach uses the AutoLog program to continuously collect data over a measurement period (e.g. every 5 seconds for 2 – 7 min), which is then processed post-collection using the autoGoldy package in R to select a stable window in the time-series and then output the averaged data over that window along with the associated plot diagnostics (see Fig. 1).
+
+Below we describe the methods for the two main parts of this objective selection: 1. How to collect the IRGA data time-series for the autoGoldy program on the LICOR 6400 and 2. How to install and run the autoGoldy package in R.
+
+![](/Users/John/Desktop/dropbox/goldy/vignette/Fig1.png)
+*__Figure 1. Plot diagnostics example.__ The autoGoldy program selects a stable window (green box) and then calculates averages for all variables during that window, which is output to a .csv file. Stability is determined by calculating slope and the coefficient of variation for a sliding window across the data and selecting the window with the minimum summed, wighted quantile. Users select one or more traits (e.g. photo, cond), window length and have the option to weight the traits and stability measures.*
+
+
+
+
+### Collecting IRGA data using AutoLog program
+The IRGA data time-series must be collected and saved in a specific manner for use in the autoGoldy package. The AutoLog program on the LICOR 6400 is used to continuously collected data over a measurement period for each plant sample using the following steps:
+
+1.	Follow warm up and preparation check list in the LICOR 6400 manual. Set the controls (e.g. flow rate, reference CO2, light, etc.) and match the IRGAs. (Also, be sure data are being saved as .rtf files).
+2.	Place leaf in the cuvette. 
+3.	Within “New Measurements”, select AutoProg (press 5, then F1)
+4.	Select AutoLog2 
+5.	Enter a new file name (do not append, each sample should have its own file). We recommend an easy file system such as project, date, plot, sample (e.g.. CE07111_101S where project = CE, date = 07/11/11, plot = 101 and sample = S). Each time a new plant is sampled the old file name will appear and it is easier to change the end of the file name than the beginning. This filename will be displayed in the output and plot diagnostics.
+6.	Configure the program, which will appear each time, but it only needs to be configured once. This will determine how often the log is taken and the maximum duration. We recommend logging every 5 seconds with a duration of 5-7 minutes. To do this expand the summary node and modify the configuration.
+7.	Bypass the “remarks” box and hit “Start” (F5) to being the program.
+8.	With the program running, monitor photosynthesis and conductance from the “View Graph”, (press 4, then F3). Arrows at the bottom of the graphs and beeps indicate autologs. 
+9.	The AutoLog program can end two ways
+      * Allow the program to run for the selected duration (e.g. 5-7 minutes). 
+      * Abort the program early if photosynthesis and/or conductance stabilize for a one minute window prior to the end of the selected duration. To abort the program early, press Escape from the “New Measurements” window and press A to abort the program.
+10.	Close the file (press 1, then F3). 
+11.	For the next sample, return to step 2 and repeat all subsequent steps.
+12.	Once the data are collected, download the files (.rtf) from the LICOR 6400 and store in a single folder.
+
+# Description
+### What is autoGoldy?
+autoGoldy is a data processing function, written in R that takes IRGA .rtf output data and chooses the most stable window. This likely represents the best estimate of physiological parameters for an individual leaf measurement. 
+
+#### The autoGoldy function runs the following pipeline:
+1.	Import and parse .rtf LICOR datasets
+2.	Standardize (0-1) and plot the raw data
+3.	Run a sliding window analysis to calculate the slope and CV of standardized data
+4.	Find the most stable window
+5.	Plot diagnostics
+6.	Output the optimal data
+
+### Fine tuning the stability estimates
+#### Traits used for convergence
+autoGoldy can use up to two of the measurements in the .rtf file to determine stability. The default is to use COND and PHOTO, but these can be changed by the user under the "trait1" and "trait2" arguments. 
+
+#### Weights
+The user can also adjust the weight. For example, if it is thought that COND is more sensitive to timing than PHOTO, the user may want to place more weight on these data. This can be specified in the "weights" vector. 
+
+#### Window size
+The size of the window in the sliding window optimization protocol. Window refers to the number of observations and therefore window length is determined by the number of observations and logging frequency. For example window = 12 at a logging frequency of every 5 seconds equals a one-minute window. This window length will “slide” across all observations in the dataset.
+
+# Example
+### Installing autoGoldy
+To download from github, you need to have the R package "devtools" installed as well.
+```{r}
+library(devtools)
+install_github("jtlovell/goldy")
+```
+
+Now load the goldy R package
+```{r}
+library(goldy)
+```
+
+### Locate .rtf IRGA data files and set up environment. 
+Set the input directory to the location of IRGA .rtf files
+```{r}
+setwd("/Users/John/Downloads/autoGoldy-Beta")
+input.directory<-"/Users/John/Downloads/autoGoldy-Beta/exampledata"
+```
+
+Set the folder location for output graphics and summary information
+```{r}
+output.directory<-"/Users/John/Downloads/autoGoldy-Beta/exampleoutput"
+```
+
+### Run autoGoldy on a single file
+change window and weights as desired
+
+```{r}
+out<-autoGoldy(filename="/Users/John/Downloads/autoGoldy-Beta/exampledata/CE071111_101S", trait1 = "Photo", trait2 = "Cond", window=6, weights=c(1,1,1,1))
+```
+
+
+### Run autoGoldy on folder with multiple files
+
+Change window and weights as desired
+
+```{r}
+out<-autoGoldy(dirname=input.directory, output.dir=output.directory, trait1 = "Photo", trait2 = "Cond", window=6, weights=c(1,1,1,1))
+```
+
+
+
+
+
+
+
+
+
+

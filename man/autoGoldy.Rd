@@ -4,8 +4,9 @@
 \alias{autoGoldy}
 \title{Automated processing of LICOR / IRGA Data}
 \usage{
-autoGoldy(filename, trait1 = "Photo", trait2 = "Cond", window = 6,
-  verbose = TRUE, weights = c(1, 1, 1, 1))
+autoGoldy(filename = NULL, dirname = NULL, trait1 = "Photo",
+  trait2 = "Cond", window = 6, verbose = TRUE, weights = c(1, 1, 1, 1),
+  output.dir = NULL)
 }
 \arguments{
 \item{filename}{The path and name of a file to parse and optimize}
@@ -44,6 +45,6 @@ This function runs the following pipeline:
 }
 }
 \examples{
-out<-autoGoldy(filename="./data/RO_052714_rr11_h57s", window=4, weights=c(1,1,.5,.5))
+## Not Run out<-autoGoldy(filename="./data/RO_052714_rr11_h57s", window=4, weights=c(1,1,.5,.5))
 }
 
