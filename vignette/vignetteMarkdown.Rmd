@@ -88,7 +88,6 @@ library(goldy)
 ### Locate .rtf IRGA data files and set up environment. 
 Set the input directory to the location of IRGA .rtf files
 ```{r}
-setwd("/Users/John/Downloads/autoGoldy-Beta")
 input.directory<-"/Users/John/Downloads/autoGoldy-Beta/exampledata"
 ```
 
