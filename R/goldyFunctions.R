@@ -79,8 +79,17 @@ weightedRank<-function(x, slope1,cv1,slope2=NULL,cv2=NULL, weights=NULL,window){
   summedQuant<-summedRank/max(summedRank, na.rm=TRUE)
   best.index<-which(summedQuant==min(summedQuant, na.rm=TRUE))
   best.point<-x[best.index]
-  best.low<-x[best.index-floor((window)/2)]
-  best.high<-x[best.index+ceiling((window)/2)]
+  if((best.index-floor((window)/2)) != 0){
+    best.low<-x[best.index-floor((window)/2)]
+  }else{
+    best.low<-1
+  }
+  if((best.index+ceiling((window)/2))<length(x)){
+    best.high<-x[best.index+ceiling((window)/2)]
+  }else{
+    best.high<-x[length(x)]
+  }
+
   wind.size<-x[which(summedQuant==min(summedQuant,na.rm=T))]
   rect(xleft=best.low, xright=best.high, ytop=1, ybottom=0,
        border="forestgreen", col=rgb(0,1,0,.2))
