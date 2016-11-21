@@ -79,6 +79,7 @@ weightedRank<-function(x, slope1,cv1,slope2=NULL,cv2=NULL, weights=NULL,window){
   summedQuant<-summedRank/max(summedRank, na.rm=TRUE)
   best.index<-which(summedQuant==min(summedQuant, na.rm=TRUE))[1]
   best.point<-x[best.index]
+
   if((best.index-floor((window)/2)) != 0){
     best.low<-x[best.index-floor((window)/2)]
   }else{
