@@ -98,11 +98,7 @@ autoGoldy<-function(filename=NULL,dirname=NULL, trait1="Photo", trait2="Cond",
       if(length(nanames)>0){
         for(j in nanames) out[,j]<-NA
       }
-<<<<<<< HEAD
       out<-out[,c(cnames, "time.seconds","filename","window.size.observations")]
-=======
-      out<-out[,cnames]
->>>>>>> cdaad9b10d1fe2f5d2de67b3c854ede368f07002
       all.out<-rbind(all.out, out)
     }
     dev.off()
