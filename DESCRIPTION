@@ -1,8 +1,8 @@
 Package: goldy
 Type: Package
 Title: Process Time-Series Gas Exchange Data
-Version: 1.0
-Date: 2016-02-12
+Version: 1.1
+Date: 2017-06-30
 Author: David L. Hoover, John T. Lovell
 Maintainer: John T. Lovell <johntlovell@gmail.com>
 Description: Processes time-series data from infrared gas analyzers, such as the LICOR 6400
@@ -11,4 +11,4 @@ LazyData: TRUE
 VignetteBuilder: knitr
 Depends:
     zoo
-RoxygenNote: 5.0.1
+RoxygenNote: 6.0.1

@@ -11,4 +11,3 @@ parseLICOR(x, use.rtf = TRUE)
 Import zoo
 Export
 }
-

@@ -66,6 +66,8 @@ autoGoldy<-function(filename=NULL,dirname=NULL, trait1="Photo", trait2="Cond",
       filename<-dir(dirname)
       print(filename)
     }
+    if(verbose) cat("checking column names\n")
+    cnames<-unique(unlist(lapply(filename, function(x) colnames(parseLICOR(x)))))
 
     if(verbose) cat("parsing", length(filename), "irga files\n")
     if(verbose) cat("writing pdf output to file: diagnosticPlots.pdf\n")
@@ -92,10 +94,20 @@ autoGoldy<-function(filename=NULL,dirname=NULL, trait1="Photo", trait2="Cond",
                      trait1=trait1, trait2=trait2,
                      inputFile=i)
       out<-getBV(dat=dat, ranks=ranks, filename=i, window=window)
+      nanames<-cnames[!cnames %in% colnames(out)]
+      if(length(nanames)>0){
+        for(j in nanames) out[,j]<-NA
+      }
+<<<<<<< HEAD
+      out<-out[,c(cnames, "time.seconds","filename","window.size.observations")]
+=======
+      out<-out[,cnames]
+>>>>>>> cdaad9b10d1fe2f5d2de67b3c854ede368f07002
       all.out<-rbind(all.out, out)
     }
     dev.off()
     if(verbose) cat("writing dataset of values to file: meanValues.csv")
     write.csv(all.out, file=paste(output.dir, "/meanValues.csv", sep=""), row.names=F)
+    return(all.out)
   }
 }

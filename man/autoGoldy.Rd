@@ -47,4 +47,3 @@ This function runs the following pipeline:
 \examples{
 ## Not Run out<-autoGoldy(filename="./data/RO_052714_rr11_h57s", window=4, weights=c(1,1,.5,.5))
 }
-
